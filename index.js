@@ -30,6 +30,64 @@ async function run() {
 
     //---------APIs------------------------------------------------------------------------------
 
+    // GET SINGLE USER
+    app.get("/users/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const user = await userCollection.findOne({ uid: id });
+        console.log(user);
+
+        if (user?.uid) {
+          res.json(user);
+        } else {
+          res.status(404).send("No User Found");
+        }
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
+    // ADD USER
+    app.post("/users", async (req, res) => {
+      try {
+        const user = req.body;
+
+        if (!user?.email) {
+          res.status(403).send("Invalid Input");
+        }
+
+        const result = await userCollection.insertOne(user);
+        console.log("post user", result);
+        if (result.acknowledged) {
+          res.json(user);
+        } else {
+          throw new Error("Could not add User");
+        }
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
+    // UPDATE USER
+    app.put("/users", async (req, res) => {
+      try {
+        const user = req.body;
+        const filter = { email: user.email };
+        const options = { upsert: true };
+        const updateDoc = { $set: user };
+
+        if (user?.email) {
+          const result = await userCollection.updateOne(filter, updateDoc, options);
+          res.json(user);
+          console.log("put user", result);
+        } else {
+          res.status(404).send("could not update user");
+        }
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
     //--------------------------------------------------------------------------
   } catch (err) {
     console.log(err);
