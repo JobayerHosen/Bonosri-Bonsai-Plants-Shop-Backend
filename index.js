@@ -112,7 +112,11 @@ async function run() {
     //GET ALL PRODUCTS
     app.get("/products", async (req, res) => {
       try {
+        const limit = parseInt(req.query?.limit);
+        console.log(limit);
         const cursor = productCollection.find({});
+        if (limit) cursor.limit(limit);
+
         const products = await cursor.toArray();
         if (products) {
           res.json(products);
