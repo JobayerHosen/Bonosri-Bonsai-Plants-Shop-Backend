@@ -88,6 +88,27 @@ async function run() {
       }
     });
 
+    // UPDATE USER ROLE
+    app.put("/users/role/:id", async (req, res) => {
+      try {
+        const user = req.body;
+        const requester = req.params.id;
+        if (requester) {
+          const requesterAccount = await userCollection.findOne({ uid: requester });
+          if (requesterAccount?.role === "admin") {
+            const filter = { email: user.email };
+            const updateDoc = { $set: { role: user.role } };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.json(result);
+          }
+        } else {
+          res.status(403).json({ message: "Unauthorized" });
+        }
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
     //--------------------------------------------------------------------------
   } catch (err) {
     console.log(err);
