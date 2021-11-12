@@ -27,6 +27,7 @@ async function run() {
     const productCollection = db.collection("products");
     const userCollection = db.collection("users");
     const orderCollection = db.collection("orders");
+    const reviewCollection = db.collection("reviews");
 
     //---------APIs------------------------------------------------------------------------------
 
@@ -267,6 +268,31 @@ async function run() {
         } else {
           res.status(404).send("No Order Found");
         }
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
+    // GET ALL REVIEWS
+    app.get("/reviews", async (req, res) => {
+      try {
+        const cursor = await reviewCollection.find({});
+        const reviews = await cursor.toArray();
+        if (reviews) res.json(reviews);
+        else res.status(404).send("No Reviews Found");
+      } catch (err) {
+        res.status(500).send(`internal server error: ${err}`);
+      }
+    });
+
+    //ADD REVIEW
+    app.post("/reviews", async (req, res) => {
+      try {
+        const review = req.body;
+
+        const result = await reviewCollection.insertOne(review);
+        if (result.acknowledged) res.json(review);
+        else throw new Error("could not add review");
       } catch (err) {
         res.status(500).send(`internal server error: ${err}`);
       }
