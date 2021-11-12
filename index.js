@@ -239,21 +239,16 @@ async function run() {
       try {
         const id = req.params.id;
         const order = req.body;
-        if (!order?.uid) throw new Error("invalid input");
 
         const filter = await orderCollection.findOne({ _id: ObjectId(id) });
         const options = { upsert: true };
         const updateDoc = { $set: order };
 
-        if (order?.uid === filter?.uid) {
-          const result = await orderCollection.updateOne(filter, updateDoc, options);
+        const result = await orderCollection.updateOne(filter, updateDoc, options);
 
-          if (result.acknowledged) res.json(order);
-          else throw new Error("Could Not Update");
-          //
-        } else {
-          res.status(404).send("could not updated");
-        }
+        if (result.acknowledged) res.json(order);
+        else throw new Error("Could Not Update");
+        //
       } catch (err) {
         res.status(500).send(`internal server error: ${err}`);
       }
